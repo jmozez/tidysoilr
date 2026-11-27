@@ -1,0 +1,187 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  dpi = 120
+)
+```
+
+# tidysoilr
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/jmozez/tidysoilr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jmozez/tidysoilr/actions/workflows/R-CMD-check.yaml)
+[![lint](https://github.com/jmozez/tidysoilr/actions/workflows/lint.yaml/badge.svg)](https://github.com/jmozez/tidysoilr/actions/workflows/lint.yaml)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jmozez/tidysoilr/blob/main/LICENSE.md)
+<!-- badges: end -->
+
+tidysoilr brings everyday soil laboratory, profile and spectroscopy
+calculations into the tidyverse and tidymodels:
+
+| Topic | Functions |
+|---|---|
+| Data classes | `soil_profile()`, `soil_spectra()`, `<soil_retention>`, `soil_as_aqp()` |
+| Profiles | `soil_profile_check()`, `soil_slice()`, `soil_depth_mean()` |
+| Texture | `soil_texture_class()` (USDA and FAO), `soil_texture_polygons()`, `soil_texture_ilr()`, `soil_texture_ilr_inv()` |
+| Particle-size analysis | `soil_hydrometer()`, `soil_pipette()` |
+| Physics and pedotransfer | `soil_bulk_density()`, `soil_porosity()`, `soil_ptf_saxton()`, `soil_ptf_bd()` |
+| Water retention | `soil_vg_fit()`, `soil_vg_theta()`, `soil_awc()` |
+| Carbon and depth harmonisation | `soil_spline()`, `soil_carbon_stock()`, `soil_carbon_total()` |
+| Fertility | `soil_base_saturation()`, `soil_ph_class()`, `soil_fertility_rating()`, `soil_fertility_thresholds()`, `soil_nutrient_index()` |
+| Spectroscopy | `soil_absorbance()`, `soil_snv()`, `soil_msc()`, `soil_savgol()`, `soil_resample()`, `soil_continuum_removal()` |
+| Soil quality | `soil_quality_index()`, `sqi_more()`, `sqi_less()`, `sqi_optimum()`, `soil_mds()` |
+| recipes | `step_soil_snv()`, `step_soil_savgol()`, `step_soil_ilr()`, `step_soil_texture()` |
+| rsample | `soil_profile_cv()`, `soil_spatial_block_cv()`, `soil_kennard_stone()` |
+| yardstick | `sep()` (bias-corrected standard error of prediction), `texture_adjacent_accuracy()` |
+| parsnip | `soil_pls()` (engine `"nipals"`) |
+| broom and ggplot2 | `tidy()`, `glance()`, `augment()`, `autoplot()` and `soil_texture_triangle()` |
+
+Every function takes a data frame first, so it works with the native pipe,
+and selects columns with tidy evaluation. All calculations are written in
+base R, so the package needs no compiled spatial or chemometric libraries;
+sf and aqp are used only when you ask for them.
+
+## Why tidysoilr?
+
+R already has excellent soil packages: aqp and soilDB for profiles and US
+soil data, soiltexture for texture triangles, mpspline2 and ithir for
+depth splines, prospectr for spectra and soilphysics for water retention.
+They mostly work on matrices, lists or S4 objects, so they sit awkwardly in
+a dplyr and tidymodels pipeline. tidysoilr adds depth-aware tibbles that
+survive dplyr verbs, log-ratio handling of texture, spectral preprocessing
+as recipes steps that can be tuned and reapplied to new samples,
+resampling that respects profiles and space, and a PLS model with no
+Bioconductor dependency. The full survey and scope are in
+[`inst/design.md`](inst/design.md).
+
+## Installation
+
+Install the development version from GitHub:
+
+```r
+# install.packages("pak")
+pak::pak("jmozez/tidysoilr")
+```
+
+## Example: Papua New Guinea soil profiles
+
+`png_profiles` holds real laboratory data for 32 profiles from Papua New
+Guinea, from the ISRIC WoSIS database.
+
+```{r profile}
+library(tidysoilr)
+
+prof <- soil_profile(png_profiles, id = profile, top = top, bottom = bottom,
+  horizon = horizon)
+prof
+glance(prof)
+```
+
+Texture classes and the texture triangle:
+
+```{r texture, fig.height = 4.5, warning = FALSE}
+prof |>
+  soil_texture_class(sand, silt, clay) |>
+  dplyr::count(texture, sort = TRUE)
+
+soil_texture_triangle(png_profiles, sand, silt, clay, colour = wrb_group)
+```
+
+Harmonise organic carbon to the GlobalSoilMap depths with equal-area
+splines, then compute carbon stocks to 30 cm:
+
+```{r carbon}
+soil_spline(prof, oc, clay, depths = c(0, 5, 15, 30, 60, 100)) |>
+  dplyr::filter(profile == "PG0021")
+
+prof |>
+  soil_carbon_stock(oc, bulk_density, coarse = coarse_frag) |>
+  soil_carbon_total(soc_stock, from = 0, to = 30) |>
+  dplyr::filter(coverage == 1)
+```
+
+Fertility ratings and Parker's nutrient index by soil group:
+
+```{r fertility}
+prof |>
+  soil_fertility_rating(cec) |>
+  soil_nutrient_index(cec_rating, .by = wrb_group) |>
+  dplyr::filter(!is.na(wrb_group))
+```
+
+## Example: water retention
+
+```{r retention, fig.height = 3.5}
+fits <- soil_vg_fit(soil_retention_lab, h = h_cm, theta = theta, .by = sample)
+fits |> soil_awc(thickness = 30) |> dplyr::select(sample, alpha, n, awc, awc_mm)
+autoplot(fits)
+```
+
+## Example: a tidymodels spectroscopy calibration
+
+Spectral preprocessing as recipes steps, a PLS model and resampling that
+keeps the samples of a profile together:
+
+```{r pls, message = FALSE}
+library(recipes)
+library(parsnip)
+
+nir <- soil_nir[c("profile", "clay", grep("^nm_", names(soil_nir), value = TRUE))]
+
+rec <- recipe(clay ~ ., data = nir) |>
+  update_role(profile, new_role = "id") |>
+  step_soil_snv(starts_with("nm_")) |>
+  step_soil_savgol(starts_with("nm_"), window = 7, deriv = 1)
+
+model <- soil_pls(num_comp = 6) |> set_engine("nipals")
+wf <- workflows::workflow(rec, model)
+
+set.seed(1)
+folds <- soil_profile_cv(nir, id = profile, v = 5)
+soil_metrics <- yardstick::metric_set(yardstick::rmse, sep, yardstick::rpiq,
+  yardstick::ccc)
+
+preds <- lapply(folds$splits, function(split) {
+  fitted <- fit(wf, rsample::analysis(split))
+  test <- rsample::assessment(split)
+  dplyr::bind_cols(test["clay"], predict(fitted, test))
+})
+dplyr::bind_rows(preds) |> soil_metrics(clay, .pred)
+```
+
+## Data
+
+| Dataset | Content | Source and licence |
+|---|---|---|
+| `png_profiles` | 150 layers of 32 profiles from Papua New Guinea, 1967 to 1983: texture, organic carbon, nitrogen, bulk density, pH, CEC, water retention | Real. ISRIC WoSIS (Batjes et al. 2024). ISRIC-WISE profiles under CC BY 3.0; USDA NCSS profiles in the US public domain |
+| `soil_retention_lab` | Water retention curves of 12 samples | Simulated from Carsel and Parrish (1988) class parameters |
+| `soil_hydrometer_lab` | Hydrometer readings of 24 samples | Simulated |
+| `soil_nir` | Vis-NIR reflectance spectra of 120 samples from 30 profiles | Simulated |
+| `soil_quality_trial` | Topsoil indicators for 36 plots under three land uses | Simulated |
+
+`data-raw/make_data.R` documents how each dataset was made. When you use
+`png_profiles`, please cite WoSIS and the WISE and NCSS source databases as
+given in `?png_profiles`.
+
+## Companion packages
+
+tidysoilr works alongside the author's other tidy packages, all optional:
+
+* [tidymapr](https://tidymapr.in4metrix.dev) is the spatial and remote
+  sensing companion. Use it to map tidysoilr results, such as profile
+  sites, carbon stocks and spline outputs, and to bring in SoilGrids layers
+  and other soil maps.
+* [tidyvisor](https://github.com/jmozez/tidyvisor) is the advisor that
+  suggests which analysis fits a question and data set.
+
+## Licence
+
+MIT © Jimmy Moses

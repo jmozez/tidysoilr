@@ -1,0 +1,42 @@
+test_that("broom methods for retention fits", {
+  fits <- soil_vg_fit(soil_retention_lab, h_cm, theta, .by = sample)
+  td <- tidy(fits)
+  expect_equal(nrow(td), 48)
+  expect_named(td, c("sample", "term", "estimate"))
+  expect_equal(td$estimate[td$sample == "S01" & td$term == "n"], fits$n[1])
+  gl <- glance(fits)
+  expect_equal(gl$n_curves, 12)
+  expect_equal(gl$n_obs, nrow(soil_retention_lab))
+  au <- augment(fits)
+  expect_equal(nrow(au), nrow(soil_retention_lab))
+  expect_equal(au$.resid, au$theta - au$.fitted)
+  single <- soil_vg_fit(soil_retention_lab[soil_retention_lab$sample == "S07", ], h_cm, theta)
+  expect_equal(nrow(augment(single)), 9)
+})
+
+test_that("broom methods for PLS fits", {
+  x <- soil_nir[grep("^nm_", names(soil_nir))]
+  fit <- soil_pls_fit(x, soil_nir$clay, num_comp = 5)
+  td <- tidy(fit)
+  expect_equal(td$term[1], "(Intercept)")
+  expect_equal(nrow(td), ncol(x) + 1)
+  manual <- td$estimate[1] + as.matrix(x) %*% td$estimate[-1]
+  expect_equal(as.vector(manual), predict(fit, x), tolerance = 1e-8)
+  vip <- tidy(fit, type = "vip")
+  expect_equal(mean(vip$vip^2), 1, tolerance = 1e-8)
+  expect_equal(glance(fit)$num_comp, 5)
+  expect_true(".pred" %in% names(augment(fit, soil_nir)))
+  expect_error(tidy(fit, num_comp = 9), "exceeds")
+})
+
+test_that("glance() for profiles and tidy() for spectra", {
+  prof <- soil_profile(png_profiles, profile, top, bottom)
+  gl <- glance(prof)
+  expect_equal(gl$n_profiles, 32)
+  expect_equal(gl$n_layers, 150)
+  spec <- soil_spectra(soil_nir, dplyr::starts_with("nm_"))
+  long <- tidy(spec, id = sample)
+  expect_named(long, c("sample", "wavelength", "value"))
+  expect_equal(nrow(long), 120 * 105)
+  expect_named(tidy(spec), c(".row", "wavelength", "value"))
+})
