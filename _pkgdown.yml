@@ -1,0 +1,93 @@
+url: https://tidysoilr.in4metrix.dev/
+
+template:
+  bootstrap: 5
+  includes:
+    # Readers can switch the site between light and dark (light-switch
+    # below); plots keep a white background in both (extra.css).
+    # The CSP allows only the site's own scripts; static hosting cannot
+    # always send security headers, so they are set as meta tags.
+    in_header: |
+      <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+      <meta name="referrer" content="strict-origin-when-cross-origin">
+  light-switch: true
+  bslib:
+    primary: "#1A9E93"
+    secondary: "#0E2A47"
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter"}
+    code_font: {google: "JetBrains Mono"}
+    font-size-base: 1rem
+    line-height-base: 1.65
+    headings-font-weight: 700
+    link-color: "#13857B"
+    navbar-bg: "#0E2A47"
+    border-radius: 0.5rem
+
+# Every figure, including reference-page examples, on an opaque white
+# background, so plots stay white when a reader switches the site to dark.
+figures:
+  bg: white
+  dev.args:
+    bg: white
+
+repo:
+  url:
+    home: https://github.com/jmozez/tidysoilr/
+    source: https://github.com/jmozez/tidysoilr/blob/main/
+    issue: https://github.com/jmozez/tidysoilr/issues/
+  branch: main
+
+navbar:
+  bg: dark
+  structure:
+    left: [reference, news, ecosystem, search, github]
+    right: []
+  components:
+    ecosystem:
+      text: Ecosystem
+      icon: fa-cubes
+      aria-label: Companion packages that work together with the tidyverse and tidymodels
+      menu:
+        - text: Packages that work together
+        - text: "tidydiversity: Taxonomic, phylogenetic and functional diversity"
+          icon: fa-leaf
+          href: https://tidydiversity.in4metrix.dev/
+        - text: "tidymapr: Spatial analysis, remote sensing and maps"
+          icon: fa-map
+          href: https://tidymapr.in4metrix.dev/
+        - text: "tidyvisor: Statistical advice and interpretation"
+          icon: fa-compass
+          href: https://tidyvisor.in4metrix.dev/
+        - text: "tidyepidemio: Epidemiological analysis"
+          icon: fa-virus
+          href: https://tidyepidemio.in4metrix.dev/
+        - text: "tidyinvasion: Invasion biology and biosecurity"
+          icon: fa-seedling
+          href: https://tidyinvasion.in4metrix.dev/
+        - text: "tidymetr: Meta-analysis and evidence synthesis"
+          icon: fa-layer-group
+          href: https://tidymetr.in4metrix.dev/
+        - text: "tidybiotek: Biotechnology bioinformatics"
+          icon: fa-dna
+          href: https://tidybiotek.in4metrix.dev/
+        - text: "tidysoilr: Soil analysis"
+          icon: fa-mountain
+          href: https://tidysoilr.in4metrix.dev/
+    github:
+      icon: fa-github
+      aria-label: Source code on GitHub
+      href: https://github.com/jmozez/tidysoilr
+    news:
+      text: News
+      href: news/index.html
+
+home:
+  title: "tidysoilr: Tidy Tools for Soil Analysis"
+  sidebar:
+    structure: [links, license, community, citation, authors, dev]
+
+footer:
+  structure:
+    left: [developed_by]
+    right: [built_with]

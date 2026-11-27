@@ -9,3 +9,8 @@
 ^tidysoilr.*\.tar\.gz$
 ^README\.html$
 ^Rplots\.pdf$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^vercel\.json$
+^\.vercelignore$
