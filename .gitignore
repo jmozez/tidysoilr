@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Rdata
+.httr-oauth
+.DS_Store
+tidysoilr.Rcheck/
+tidysoilr_*.tar.gz
+README.html
+data-raw/cache/
+Rplots.pdf

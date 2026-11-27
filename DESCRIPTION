@@ -1,0 +1,59 @@
+Package: tidysoilr
+Title: Tidy Tools for Soil Analysis
+Version: 0.1.0
+Authors@R: 
+    person("Jimmy", "Moses", , "jimmy.moses@pnguot.ac.pg", role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0003-3342-2384"))
+Description: Pipe-friendly tools for soil laboratory, profile and
+    spectroscopy data. Covers USDA and FAO texture classes and log-ratio
+    transforms of particle-size data, hydrometer and pipette particle-size
+    analysis, bulk density, porosity and pedotransfer functions (Saxton and
+    Rawls 2006 <doi:10.2136/sssaj2005.0117>), van Genuchten water retention
+    fitting, equal-area quadratic splines for depth harmonisation (Bishop
+    et al. 1999 <doi:10.1016/S0016-7061(99)00003-8>), organic carbon stocks,
+    exchangeable bases, fertility ratings and nutrient indices, soil quality
+    indices, and spectral preprocessing (standard normal variate,
+    multiplicative scatter correction, Savitzky-Golay derivatives and
+    continuum removal). Integrates with 'tidymodels' through 'recipes'
+    steps, profile-grouped, spatial block and Kennard-Stone resampling for
+    'rsample', 'yardstick' metrics and a partial least squares 'parsnip'
+    model, with 'broom' and 'ggplot2' methods including a texture triangle.
+    Profile and spectra tibble subclasses keep their metadata through
+    'dplyr' verbs. All methods are written in base R.
+License: MIT + file LICENSE
+URL: https://github.com/jmozez/tidysoilr
+BugReports: https://github.com/jmozez/tidysoilr/issues
+Depends: 
+    R (>= 4.1.0)
+Imports: 
+    cli (>= 3.6.0),
+    dplyr (>= 1.1.0),
+    generics (>= 0.1.3),
+    ggplot2 (>= 3.4.0),
+    parsnip (>= 1.2.0),
+    pillar,
+    recipes (>= 1.1.0),
+    rlang (>= 1.1.0),
+    rsample (>= 1.2.0),
+    splines,
+    stats,
+    tibble (>= 3.2.0),
+    tidyselect (>= 1.2.0),
+    utils,
+    vctrs (>= 0.6.0),
+    yardstick (>= 1.3.0)
+Suggests: 
+    aqp,
+    dials,
+    knitr,
+    rmarkdown,
+    sf,
+    testthat (>= 3.0.0),
+    workflows
+Config/testthat/edition: 3
+Encoding: UTF-8
+Language: en-NZ
+LazyData: true
+LazyDataCompression: xz
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.1.1

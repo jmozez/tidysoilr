@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^data-raw$
+^README\.Rmd$
+^\.github$
+^\.lintr$
+^tidysoilr\.Rcheck$
+^tidysoilr.*\.tar\.gz$
+^README\.html$
+^Rplots\.pdf$
