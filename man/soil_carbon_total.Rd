@@ -45,6 +45,7 @@ soil_carbon_total(prof, soc_stock, from = 0, to = 30)
 }
 \seealso{
 Other soil carbon:
+\code{\link[=soil_carbon_esm]{soil_carbon_esm()}},
 \code{\link[=soil_carbon_stock]{soil_carbon_stock()}},
 \code{\link[=soil_spline]{soil_spline()}}
 }
