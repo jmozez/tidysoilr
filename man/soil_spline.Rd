@@ -69,6 +69,7 @@ water capacity. \emph{Geoderma}, 154, 138-152.
 }
 \seealso{
 Other soil carbon:
+\code{\link[=soil_carbon_esm]{soil_carbon_esm()}},
 \code{\link[=soil_carbon_stock]{soil_carbon_stock()}},
 \code{\link[=soil_carbon_total]{soil_carbon_total()}}
 }

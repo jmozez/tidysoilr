@@ -33,6 +33,8 @@ soil_awc(fits, thickness = 30)
 \seealso{
 Other water retention:
 \code{\link[=predict.soil_retention]{predict.soil_retention()}},
+\code{\link[=soil_infiltration_fit]{soil_infiltration_fit()}},
+\code{\link[=soil_vg_conductivity]{soil_vg_conductivity()}},
 \code{\link[=soil_vg_fit]{soil_vg_fit()}},
 \code{\link[=soil_vg_theta]{soil_vg_theta()}}
 }

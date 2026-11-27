@@ -44,6 +44,8 @@ Science Society of America Journal}, 44, 892-898.
 Other water retention:
 \code{\link[=predict.soil_retention]{predict.soil_retention()}},
 \code{\link[=soil_awc]{soil_awc()}},
+\code{\link[=soil_infiltration_fit]{soil_infiltration_fit()}},
+\code{\link[=soil_vg_conductivity]{soil_vg_conductivity()}},
 \code{\link[=soil_vg_fit]{soil_vg_fit()}}
 }
 \concept{water retention}
